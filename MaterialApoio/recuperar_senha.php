@@ -1,35 +1,40 @@
 <?php
 session_start();
 require_once 'conexao.php';
-require_once 'funcoes_email.php';
+require_once 'funcoes_email.php'; // Arquivo com as funções que geram a senha e enviam o email
 
-if ($_SERVER["REQUEST_METHOD"] == "POST"){
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
 
+    // Verifica se o email existe no banco de dados
     $sql = "SELECT * FROM usuario WHERE email = :email";
     $stmt = $pdo->prepare($sql);
     $stmt->bindParam(":email", $email);
     $stmt->execute();
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if($usuario) {
+    if ($usuario) {
+        // Gera uma nova senha temporária
         $senha_temporaria = gerarSenhaTemporaria();
         $senha_hash = password_hash($senha_temporaria, PASSWORD_DEFAULT);
 
-        $sql = "UPDATE usuario SET senha = :senha, senha_temporaria = TRUE WHERE email = :email";
+        // Atualiza a senha no banco de dados
+        $sql = "UPDATE usuario SET senha = :senha, senha_temporaria = 1 WHERE email = :email";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(":senha", $senha_hash);
         $stmt->bindParam(":email", $email);
         $stmt->execute();
 
-        // Envia o e-mail com a senha temporária
-        simularEnvioEmail($email,$senha, );
-        echo "<script>alert('Uma senha temporaria foi gerada e eviada(simulação).Verifique o arquivo emails_simulados.txt'); window.location.href='login.php';</script>";
+        // Simula o envio de email
+        simularEnvioEmail($email, $senha_temporaria);
+        echo "<script>alert('Uma senha temporaria foi enviada para o seu email (simulação). Verifique o arquivo emails_simulados.txt'); window.location.href = 'login.php';</script>";
+
     } else {
-        echo "<script>alert('Email não encontrado!'); window.location.href='recuperar_senha.php';</script>";
+        echo "<script>alert('Email não encontrado.');</script>";
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,10 +45,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 </head>
 <body>
     <h2>Recuperar Senha</h2>
-    <form action="recuperar_senha.php" method="POST">
-        <label for="email">Digite o seu e-mail cadastrado</label>
-        <input type="email" id="email" name="email" required>
-        
-        <button type="submit">Enviar nova senha</button>
+    <form action="recuperar_senha.php" method="post">
+        <label for="email">Digite o seu email cadastrado:</label>
+        <input type="email" id="email" name="email" required><br>
+
+        <button type="submit">Enviar senha temporaria</button>
 </body>
+</html>
 </html>

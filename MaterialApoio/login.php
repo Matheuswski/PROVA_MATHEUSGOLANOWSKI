@@ -2,7 +2,7 @@
 session_start();
 require 'conexao.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST"){
+if($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $senha = $_POST['senha'];
 
@@ -13,30 +13,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if($usuario && password_verify($senha, $usuario['senha'])) {
-       //LOGIN BEM SUCEDIDO, DEFINE VARIAVEIS DE SESÃO
+        // Usuário encontrado e senha verificada
         $_SESSION['usuario'] = $usuario['nome'];
         $_SESSION['perfil'] = $usuario['id_perfil'];
         $_SESSION['id_usuario'] = $usuario['id_usuario'];
 
-        // VERIFIVA SE A SENHA É TEMPORARIA
-        if ($usuario['senha_temporaria']) {
-            // Redireciona para a página de troca de senha
-            header("Location: alterar_senha.php");
+        // Verifica de a senha é temporaria
+        if($usuario['senha_temporaria']) {
+            header('Location: alterar_senha.php');
             exit();
-        }else{
-            //REDIRECIONA PARA A PAGINA PRINCIPAL   
-        header("Location: principal.php");
-        exit();
+        } else {
+            header('Location: principal.php');
+            exit();
         }
-    }else{
-        //LOGIN INVALIDO
-        echo "<script>alert('E-mail ou senha incorretos!'); window.location.href='login.php';</script>";
+        } else{
+            // Login invalido
+            echo "<script>alert('Email ou senha incorretos.'); window.location.href = 'login.php';</script>";
+        }
     }
-
-}
 ?>
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -45,17 +42,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 </head>
 <body>
     <h2>Login</h2>
-    <form action="login.php" method="POST">
-        <label for="email">E-mail:</label>
-        <input type="email" id="email" name="email" required>
-        
-        <label for="senha">Senha:</label>
-        <input type="password" id="senha" name="senha" required>
-        
-        <button type="submit">Entrar</button>
+    <form action="login.php" method="post">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
 
+        <label for="senha">Senha:</label>
+        <input type="password" id="senha" name="senha" required><br><br>
+
+        <button type="submit">Entrar</button>
     </form>
-    
+
     <p><a href="recuperar_senha.php">Esqueci minha senha</a></p>
 </body>
 </html>
