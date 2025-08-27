@@ -14,7 +14,7 @@
 
     // SE O FORMULARIO FOR ENVIADO, BUSCA O USUARIO PELO id OU PELO nome
     if($_SERVER['REQUEST_METHOD'] == 'POST') {
-        if (!empty($_POST['busca_funconario'])) {
+        if (!empty($_POST['busca_funcionario'])) {
             $busca = trim($_POST['busca_funcionario']);
 
             // VERIFICA SE A BUSCA É UM id OU UM nome
