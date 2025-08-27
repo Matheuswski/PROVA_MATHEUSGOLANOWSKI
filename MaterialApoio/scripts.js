@@ -47,3 +47,4 @@ function selecionarUsuario(id, nome) {
     document.getElementById("busca_usuario").value = nome;
     document.getElementById("sugestoes").innerHTML = "";
 }
+

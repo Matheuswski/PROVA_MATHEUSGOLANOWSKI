@@ -1,41 +1,74 @@
 <?php
-    session_start();
+session_start();
 
-    require_once 'conexao.php';
+require_once 'conexao.php';
 
-    // VERIFICA SE O USUARIO TEM PERMISSÃO
-    // SUPONDO QUE O PERFIL '1' SEJA O 'ADM'
-    if($_SESSION['perfil'] != 1){
-        echo "Acesso negado!";
-        exit();
+// VERIFICA SE O USUARIO TEM PERMISSÃO
+// SUPONDO QUE O PERFIL '1' SEJA O 'ADM'
+if ($_SESSION['perfil'] != 1) {
+    echo "Acesso negado!";
+    exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $nome = $_POST['nome'];
+    $email = $_POST['email'];
+    $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
+    $id_perfil = $_POST['id_perfil'];
+
+    $query = "INSERT INTO usuario (nome, email, senha, id_perfil) VALUES (:nome, :email, :senha, :id_perfil)";
+
+    $stmt = $pdo->prepare($query);
+
+    $stmt->bindParam(":nome", $nome);
+    $stmt->bindParam(":email", $email);
+    $stmt->bindParam(":senha", $senha);
+    $stmt->bindParam(":id_perfil", $id_perfil);
+
+    try {
+        $stmt->execute();
+        echo "<script> alert('Usuário cadastrado com sucesso!'); </script>";
+    } catch (PDOException $e) {
+        echo "<script> alert('Erro ao cadastrar o usuário! Verifique as informações inseridas.'); </script>";
     }
+}
+// Definição das permissões por perfil
+$id_perfil = $_SESSION['perfil'];
+$sqlPerfil = "SELECT nome_perfil FROM perfil WHERE id_perfil = :id_perfil";
+$stmtPerfil = $pdo->prepare($sqlPerfil);
+$stmtPerfil->bindParam(':id_perfil', $id_perfil);
+$stmtPerfil->execute();
+$perfil = $stmtPerfil->fetch(PDO::FETCH_ASSOC);
+$nome_perfil = $perfil['nome_perfil'];
 
-    if($_SERVER['REQUEST_METHOD'] == 'POST'){
-        $nome = $_POST['nome'];
-        $email = $_POST['email'];
-        $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
-        $id_perfil = $_POST['id_perfil'];
-        
-        $query = "INSERT INTO usuario (nome, email, senha, id_perfil) VALUES (:nome, :email, :senha, :id_perfil)";
+// Definição das permissões por perfil
+$permissoes = [
+    1=>["Cadastrar"=>["cadastro_usuario.php","cadastro_perfil.php","cadastro_cliente.php","cadastro_fornecedor.php","cadastro_produto.php","cadastrar_funcionario.php"],
+        "Buscar"=>["buscar_usuario.php","buscar_perfil.php","buscar_cliente.php","buscar_fornecedor.php","buscar_produto.php","buscar_funcionario.php"],
+        "Alterar"=>["alterar_usuario.php","alterar_perfil.php","alterar_cliente.php","alterar_fornecedor.php","alterar_produto.php","alterar_funcionario.php"],
+        "Excluir"=>["excluir_usuario.php","excluir_perfil.php","excluir_cliente.php","excluir_fornecedor.php","excluir_produto.php","excluir_funcionario.php"]],
 
-        $stmt = $pdo -> prepare($query);
+    2=>["Cadastrar"=>["cadastro_cliente.php"],
+        "Buscar"=>["buscar_cliente.php","buscar_fornecedor.php","buscar_produto.php"],
+        "Alterar"=>["alterar_cliente.php","alterar_fornecedor.php"]],
 
-        $stmt -> bindParam(":nome", $nome);
-        $stmt -> bindParam(":email", $email);
-        $stmt -> bindParam(":senha", $senha);
-        $stmt -> bindParam(":id_perfil", $id_perfil);
+    3=>["Cadastrar"=>["cadastro_fornecedor.php","cadastro_produto.php"],
+        "Buscar"=>["buscar_cliente.php","buscar_fornecedor.php","buscar_produto.php"],
+        "Alterar"=>["alterar_fornecedor.php","alterar_produto.php"],
+        "Excluir"=>["excluir_produto.php"]],
 
-        try {
-            $stmt -> execute();
-            echo "<script> alert('Usuário cadastrado com sucesso!'); </script>";
-        } catch (PDOException $e) {
-            echo "<script> alert('Erro ao cadastrar o usuário! Verifique as informações inseridas.'); </script>";
-        }
-    }
+    4=>["Cadastrar"=>["cadastro_cliente.php"],
+        "Buscar"=>["buscar_produto.php"],
+        "Alterar"=>["alterar_cliente.php"]],
+];
+
+// Obtendo as opções disponíveis para o perfil do usuário logado
+$opcoes_menu = $permissoes[$id_perfil];
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,7 +76,24 @@
 
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
+<nav>
+        <ul class="menu">
+            <?php foreach ($opcoes_menu as $categoria => $arquivos): ?>
+                <li class="dropdown">
+                    <a href="#"><?= $categoria ?></a>
+                    <ul class="dropdown-menu">
+                        <?php foreach ($arquivos as $arquivo): ?>
+                            <li>
+                                <a href="<?= $arquivo ?>"><?= ucfirst(str_replace("_", " ", basename($arquivo, ".php"))) ?></a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    </nav>
 
     <h2>Cadastro Usuário</h2>
 
@@ -69,8 +119,8 @@
         <button type="reset">Cancelar</button>
     </form>
 
-    <a class="btn-voltar" href="principal.php">Voltar</a>
-
+    
     <script src="validacoes.js"></script>
 </body>
+
 </html>
