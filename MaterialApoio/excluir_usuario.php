@@ -80,8 +80,23 @@ $opcoes_menu = $permissoes[$id_perfil];
 
     <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
+<nav>
+        <ul class="menu">
+            <?php foreach ($opcoes_menu as $categoria => $arquivos): ?>
+                <li class="dropdown">
+                    <a href="#"><?= $categoria ?></a>
+                    <ul class="dropdown-menu">
+                        <?php foreach ($arquivos as $arquivo): ?>
+                            <li>
+                                <a href="<?= $arquivo ?>"><?= ucfirst(str_replace("_", " ", basename($arquivo, ".php"))) ?></a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    </nav>
     <h2>Excluir Usuário</h2>
 
     <?php if (!empty($usuarios)): ?>
@@ -112,22 +127,6 @@ $opcoes_menu = $permissoes[$id_perfil];
                 </table>
             </center>
         </div>
-        <nav>
-            <ul class="menu">
-                <?php foreach ($opcoes_menu as $categoria => $arquivos): ?>
-                    <li class="dropdown">
-                        <a href="#"><?= $categoria ?></a>
-                        <ul class="dropdown-menu">
-                            <?php foreach ($arquivos as $arquivo): ?>
-                                <li>
-                                    <a href="<?= $arquivo ?>"><?= ucfirst(str_replace("_", " ", basename($arquivo, ".php"))) ?></a>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        </nav>
     <?php else: ?>
         <p>Nenhum consagrado encontrado!</p>
     <?php endif; ?>
